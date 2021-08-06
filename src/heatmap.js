@@ -12,10 +12,18 @@ class HeatMap extends Component {
         this.x_label = this.data.columns.slice(1, );
         this.y_label = Array.from(new Set(d3.map(this.data, d => d.qty_pct)));
         this.chart_dat = this.process_data(this.data);
-        this.margin = ({ top: 15, left: 20, right: 20, bottom: 80 });
-        this.y_scale = d3.scaleBand().domain(this.y_label).range([this.height - this.margin.bottom - this.margin.top, this.margin.top]);
-        this.x_scale = d3.scaleBand().domain(this.x_label).range([0, this.width - this.margin.left - this.margin.right]);
-        this.color_scale = d3.scaleSequential(d3.interpolateOrRd).domain([0, d3.max(this.chart_dat, d => d.sub_count)]);
+        this.margin = ({ top: 20, left: 20, right: 20, bottom: 80 });
+        this.y_scale = d3
+            .scaleBand()
+            .domain(this.y_label)
+            .range([this.height - this.margin.bottom - this.margin.top, 0]);
+        this.x_scale = d3
+            .scaleBand()
+            .domain(this.x_label)
+            .range([0, this.width - this.margin.left - this.margin.right]);
+        this.color_scale = d3
+            .scaleSequential(d3.interpolateOrRd)
+            .domain([0, d3.max(this.chart_dat, d => d.sub_count)]);
 
         this.valRange = [0, d3.max(this.chart_dat, d => d.sub_count)]
         this.legendBins = [...Array(9).keys()].map(x => d3.quantile(this.valRange, x * 0.1))
@@ -56,14 +64,13 @@ class HeatMap extends Component {
 
         svg 
             .append('g')
-                .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
+                .attr("transform", `translate(${this.margin.left}, 0)`)
                 .call(d3.axisBottom(this.x_scale).tickSize(0))
                 .call(g => g.select(".domain").remove())
                 .selectAll("text")
-                .attr("y", 5)
-                .attr("dy", ".35em")
-                .style("text-anchor", "center")
-                .style("fill", "#777");
+                // .attr("y", 5)
+                    .style("text-anchor", "center")
+                    .style("fill", "#777");
         
         svg 
             .append('g')
@@ -71,7 +78,7 @@ class HeatMap extends Component {
                 .call(d3.axisLeft(this.y_scale).tickSize(0).tickPadding(7))
                 .call(g => g.select(".domain").remove())
                 .selectAll("text")
-                .style("fill", "#777");
+                    .style("fill", "#777");
         
         svg
             .selectAll('g')
@@ -117,30 +124,68 @@ class HeatMap extends Component {
                 .on('mousemove', (d) => {this.highlight(d, this);})
                 .on('mouseleave', (d) => {this.unhighlight(d, this);})
                 .on('mouseout' , tip.hide)
-                .on('click', (d) => {d3.selectAll('#selected').remove()})
+                .on('click', () => {d3.selectAll('#selected').remove()})
                 .call(
                     d3.drag()
                         .on('start', (e, d) => {
-                            this.dstartX = d3.select(e.sourceEvent.target).attr('x') - 2;
-                            this.dstartY = d3.select(e.sourceEvent.target).attr('y') - 2;
+                            this.cumm_dx = 0;
+                            this.cumm_dy = 0;
+                            this.drag_startX = d3.select(e.sourceEvent.target).attr('x') - 1;
+                            this.drag_startY = d3.select(e.sourceEvent.target).attr('y') - 1;
                         })
                         .on('drag', (e, d) => {
                             d3.selectAll('#selected').remove();
+                            this.cumm_dx += e.dx;
+                            this.cumm_dy += e.dy;
+                            
+                            if (this.cumm_dx < 0) {
+                                this.select_startX = Math.max(e.x, this.margin.left)
+                                this.select_endX = this.drag_startX + this.x_scale.bandwidth()
+                            } else {
+                                this.select_startX = this.drag_startX;
+                                this.select_endX = Math.min(e.x, this.width - this.margin.right)
+                            }
+
+                            if (this.cumm_dy < 0) {
+                                this.select_startY = Math.max(e.y, this.margin.top)
+                                this.select_endY = this.drag_startY + this.y_scale.bandwidth()
+                            } else {
+                                this.select_startY = this.drag_startY;
+                                this.select_endY = Math.min(e.y, this.height - this.margin.bottom)
+                            }
+
                             d3.select(this.node)
-                            .append('rect')
-                                .attr('id', 'selected')
-                                .attr('x', Math.min(this.dstartX, e.x))
-                                .attr('y', Math.min(this.dstartY, e.y))
-                                .attr('fill', d3.rgb(0, 0, 10, 0.2))
-                                .attr('width', Math.abs(this.dstartX - Math.min(e.x, this.width - this.margin.right)))
-                                .attr('height', Math.abs(this.dstartY - Math.min(e.y, this.height - this.margin.bottom)))
-                                .style('stroke', 'black')
-                                .style('stroke-width', '0.5')
-                                .on('click', (d) => {d3.selectAll('#selected').remove()})
+                                .append('rect')
+                                    .attr('id', 'selected')
+                                    .attr('x', this.select_startX)
+                                    .attr('y', this.select_startY)
+                                    .attr('fill', d3.rgb(0, 0, 10, 0.2))
+                                    .attr('width', Math.abs(this.select_startX - this.select_endX))
+                                    .attr('height', Math.abs(this.select_startY - this.select_endY))
+                                    .style('stroke', 'black')
+                                    .style('stroke-width', '0.5')
+                                    .on('click', (d) => {d3.selectAll('#selected').remove()})
+                            // console.log(e.sourceEvent.toElement)
                         })
                         .on('end', (e, d) => {
                             console.log(e)
-                            console.log(d)
+                            // d3.selectAll('#selected').remove();
+                            // console.log(this.select_endX + ', ' + this.select_endY)
+                            // console.log(e)
+                            // console.log(d)
+                            // d3.select(this.node)
+                            //     .append('rect')
+                            //         .attr('id', 'selected')
+                            //         .attr('x', this.select_startX)
+                            //         .attr('y', this.select_startY)
+                            //         .attr('fill', d3.rgb(0, 0, 10, 0.2))
+                            //         .attr('width', Math.abs(this.select_startX - this.select_endX))
+                            //         .attr('height', Math.abs(this.select_startY - this.select_endY))
+                            //         .style('stroke', 'black')
+                            //         .style('stroke-width', '0.5')
+                            //         .on('click', (d) => {d3.selectAll('#selected').remove()})
+
+                            d3.selectAll('rect').filter()
                         })
 
                 )
@@ -155,7 +200,7 @@ class HeatMap extends Component {
             .enter()
             .append("rect")
             .attr("x", (d, i) => this.legendElementWidth * i)
-            .attr("y", this.height - this.margin.bottom + 2 * this.legendHeight )
+            .attr("y", this.height - this.margin.bottom + this.legendHeight )
             .attr("width", this.legendElementWidth)
             .attr("height", this.legendHeight)
             .style("fill", d => this.color_scale(d));
@@ -167,7 +212,7 @@ class HeatMap extends Component {
             .append("text")
             .text(d => " ≥" + d.toExponential(1))
             .attr("x", (d, i) => this.legendElementWidth * i + 5)
-            .attr("y", this.height - this.margin.bottom + (this.legendHeight * 4))
+            .attr("y", this.height - this.margin.bottom + (this.legendHeight * 3))
             .style("font-size", "9pt")
             .style("font-family", "Consolas, courier")
             .style("fill", "#aaa")
@@ -180,10 +225,10 @@ class HeatMap extends Component {
             .style('stroke', 'gray')
             .style('fill-opacity', 1)
             // shrink a bit to make room for stroke, now visible
-            .attr('x', d => this.x_scale(d.cov_lbl) + this.margin.left + 2)
-            .attr('y', d => this.y_scale(d.qty_pct) + this.margin.top + 2)
-            .attr('width', this.x_scale.bandwidth() - 3)
-            .attr('height', this.y_scale.bandwidth() - 3)
+            .attr('x', d => this.x_scale(d.cov_lbl) + this.margin.left + 1)
+            .attr('y', d => this.y_scale(d.qty_pct) + this.margin.top + 1)
+            .attr('width', this.x_scale.bandwidth() - 2)
+            .attr('height', this.y_scale.bandwidth() - 2)
     }
 
     unhighlight = (e) => {
@@ -206,7 +251,6 @@ class HeatMap extends Component {
             </svg>
         );
     }
-
 }
 
-export default HeatMap
+export default HeatMap;
