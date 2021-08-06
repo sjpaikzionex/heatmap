@@ -163,19 +163,19 @@ class HeatMap extends Component {
                                     .on('click', (d) => {d3.selectAll('#selected').remove()})
                         })
                         .on('end', (e, d) => {
-                            const endrect_x = parseFloat(d3.select(e.sourceEvent.toElement).attr('x'))
-                            const endrect_y = parseFloat(d3.select(e.sourceEvent.toElement).attr('y'))
+                            const endrect_x = parseFloat(d3.select(e.sourceEvent.toElement).attr('x'));
+                            const endrect_y = parseFloat(d3.select(e.sourceEvent.toElement).attr('y'));
 
                             if (this.cumm_dx < 0) {
-                                this.select_startX = Math.max(endrect_x, this.margin.left)
+                                this.select_startX = Math.max(endrect_x, this.margin.left);
                             } else {
-                                this.select_endX = Math.min(endrect_x + this.x_scale.bandwidth(), this.width - this.margin.right)
+                                this.select_endX = Math.min(endrect_x + this.x_scale.bandwidth(), this.width - this.margin.right);
                             }
 
                             if (this.cumm_dy < 0) {
-                                this.select_startY = Math.max(endrect_y, this.margin.top)
+                                this.select_startY = Math.max(endrect_y, this.margin.top);
                             } else {
-                                this.select_endY = Math.min(endrect_y + this.y_scale.bandwidth(), this.height - this.margin.bottom)
+                                this.select_endY = Math.min(endrect_y + this.y_scale.bandwidth(), this.height - this.margin.bottom);
                             }
 
                             d3.selectAll('#selected').remove();
@@ -189,15 +189,15 @@ class HeatMap extends Component {
                                     .attr('height', Math.abs(this.select_startY - this.select_endY))
                                     .style('stroke', 'black')
                                     .style('stroke-width', '0.5')
-                                    .on('click', (d) => {d3.selectAll('#selected').remove()})
-
+                                    .on('click', (d) => {d3.selectAll('#selected').remove()});
+                            
                             d3
                                 .selectAll('rect')
-                                .filter()
+                                .filter((d, i) => {
+                                    console.log(d3.select(d))
+                                });
                         })
-
-                )
-        ;
+                );
         
         const legend = svg.append("g")
             .attr("transform", d => `translate(${this.margin.left},0)`);
