@@ -5,7 +5,6 @@ const d3 = require('d3')
 class HeatMap extends Component {
     constructor(props) {
         super(props)
-
         this.data = props.data
         this.width = props.size[0]
         this.height = props.size[1]
@@ -29,8 +28,6 @@ class HeatMap extends Component {
         this.legendBins = [...Array(9).keys()].map(x => d3.quantile(this.valRange, x * 0.1))
         this.legendHeight = 20
         this.legendElementWidth = 56
-        this.selected = []
-
         this.createHeatMap.bind(this);
     }
 
@@ -104,7 +101,6 @@ class HeatMap extends Component {
             .html((e, d) => {
                 return `qty : ${d.qty_pct}<br>cov : ${d.cov_lbl}<br>count : ${d.sub_count}`
             });
-
         svg.call(tip);
 
         svg.selectAll()
@@ -139,19 +135,19 @@ class HeatMap extends Component {
                             this.cumm_dy += e.dy;
                             
                             if (this.cumm_dx < 0) {
-                                this.select_startX = Math.max(e.x, this.margin.left)
+                                this.select_startX = Math.max(e.x + 1, this.margin.left)
                                 this.select_endX = this.drag_startX + this.x_scale.bandwidth()
                             } else {
                                 this.select_startX = this.drag_startX;
-                                this.select_endX = Math.min(e.x, this.width - this.margin.right)
+                                this.select_endX = Math.min(e.x - 1, this.width - this.margin.right)
                             }
 
                             if (this.cumm_dy < 0) {
-                                this.select_startY = Math.max(e.y, this.margin.top)
+                                this.select_startY = Math.max(e.y + 1, this.margin.top)
                                 this.select_endY = this.drag_startY + this.y_scale.bandwidth()
                             } else {
                                 this.select_startY = this.drag_startY;
-                                this.select_endY = Math.min(e.y, this.height - this.margin.bottom)
+                                this.select_endY = Math.min(e.y - 1, this.height - this.margin.bottom)
                             }
 
                             d3.select(this.node)
@@ -165,27 +161,39 @@ class HeatMap extends Component {
                                     .style('stroke', 'black')
                                     .style('stroke-width', '0.5')
                                     .on('click', (d) => {d3.selectAll('#selected').remove()})
-                            // console.log(e.sourceEvent.toElement)
                         })
                         .on('end', (e, d) => {
-                            console.log(e)
-                            // d3.selectAll('#selected').remove();
-                            // console.log(this.select_endX + ', ' + this.select_endY)
-                            // console.log(e)
-                            // console.log(d)
-                            // d3.select(this.node)
-                            //     .append('rect')
-                            //         .attr('id', 'selected')
-                            //         .attr('x', this.select_startX)
-                            //         .attr('y', this.select_startY)
-                            //         .attr('fill', d3.rgb(0, 0, 10, 0.2))
-                            //         .attr('width', Math.abs(this.select_startX - this.select_endX))
-                            //         .attr('height', Math.abs(this.select_startY - this.select_endY))
-                            //         .style('stroke', 'black')
-                            //         .style('stroke-width', '0.5')
-                            //         .on('click', (d) => {d3.selectAll('#selected').remove()})
+                            const endrect_x = parseFloat(d3.select(e.sourceEvent.toElement).attr('x'))
+                            const endrect_y = parseFloat(d3.select(e.sourceEvent.toElement).attr('y'))
 
-                            d3.selectAll('rect').filter()
+                            if (this.cumm_dx < 0) {
+                                this.select_startX = Math.max(endrect_x, this.margin.left)
+                            } else {
+                                this.select_endX = Math.min(endrect_x + this.x_scale.bandwidth(), this.width - this.margin.right)
+                            }
+
+                            if (this.cumm_dy < 0) {
+                                this.select_startY = Math.max(endrect_y, this.margin.top)
+                            } else {
+                                this.select_endY = Math.min(endrect_y + this.y_scale.bandwidth(), this.height - this.margin.bottom)
+                            }
+
+                            d3.selectAll('#selected').remove();
+                            d3.select(this.node)
+                                .append('rect')
+                                    .attr('id', 'selected')
+                                    .attr('x', this.select_startX)
+                                    .attr('y', this.select_startY)
+                                    .attr('fill', d3.rgb(0, 0, 10, 0.2))
+                                    .attr('width', Math.abs(this.select_startX - this.select_endX))
+                                    .attr('height', Math.abs(this.select_startY - this.select_endY))
+                                    .style('stroke', 'black')
+                                    .style('stroke-width', '0.5')
+                                    .on('click', (d) => {d3.selectAll('#selected').remove()})
+
+                            d3
+                                .selectAll('rect')
+                                .filter()
                         })
 
                 )
