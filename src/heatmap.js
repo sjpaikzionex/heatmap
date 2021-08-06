@@ -1,0 +1,212 @@
+import React, { Component } from 'react';
+import d3Tip from 'd3-tip';
+const d3 = require('d3')
+
+class HeatMap extends Component {
+    constructor(props) {
+        super(props)
+
+        this.data = props.data
+        this.width = props.size[0]
+        this.height = props.size[1]
+        this.x_label = this.data.columns.slice(1, );
+        this.y_label = Array.from(new Set(d3.map(this.data, d => d.qty_pct)));
+        this.chart_dat = this.process_data(this.data);
+        this.margin = ({ top: 15, left: 20, right: 20, bottom: 80 });
+        this.y_scale = d3.scaleBand().domain(this.y_label).range([this.height - this.margin.bottom - this.margin.top, this.margin.top]);
+        this.x_scale = d3.scaleBand().domain(this.x_label).range([0, this.width - this.margin.left - this.margin.right]);
+        this.color_scale = d3.scaleSequential(d3.interpolateOrRd).domain([0, d3.max(this.chart_dat, d => d.sub_count)]);
+
+        this.valRange = [0, d3.max(this.chart_dat, d => d.sub_count)]
+        this.legendBins = [...Array(9).keys()].map(x => d3.quantile(this.valRange, x * 0.1))
+        this.legendHeight = 20
+        this.legendElementWidth = 56
+        this.selected = []
+
+        this.createHeatMap.bind(this);
+    }
+
+    componentDidMount() {
+        this.createHeatMap();
+    }
+
+    componentDidUpdate() {
+        this.createHeatMap();
+    }
+
+    process_data = (grp_dat) => {
+        let ra = Array(grp_dat.length * this.x_label.length)
+
+        for (let i = 0; i < ra.length; i += this.x_label.length) {
+            for (let j = 0; j < this.x_label.length; j++) {
+                ra[i + j] = {
+                    qty_pct: grp_dat[parseInt(i / this.x_label.length)].qty_pct,
+                    cov_lbl: 'cov_' + (j + 1).toString().padStart(2, '0'), 
+                    sub_count: grp_dat[parseInt(i / this.x_label.length)]['cov_' + (j + 1).toString().padStart(2, '0')]
+                }
+            }
+        }
+
+        return ra;
+    }
+
+    createHeatMap() {
+        const node = this.node
+        const svg = d3.select(node)
+
+        svg 
+            .append('g')
+                .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
+                .call(d3.axisBottom(this.x_scale).tickSize(0))
+                .call(g => g.select(".domain").remove())
+                .selectAll("text")
+                .attr("y", 5)
+                .attr("dy", ".35em")
+                .style("text-anchor", "center")
+                .style("fill", "#777");
+        
+        svg 
+            .append('g')
+                .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
+                .call(d3.axisLeft(this.y_scale).tickSize(0).tickPadding(7))
+                .call(g => g.select(".domain").remove())
+                .selectAll("text")
+                .style("fill", "#777");
+        
+        svg
+            .selectAll('g')
+            .data(this.chart_dat)
+            .enter()
+                .append('g')
+                .attr("transform", d => `translate(0,${this.y_scale(d.qty_pct) + 1})`);
+
+        const tip = d3Tip()
+            .attr('class', 'd3-tip')
+            .offset([3, 0])
+            .direction('s')
+            .style('font-family', 'Calibri')
+            .style('line-height', 1.2)
+            .style('font-size', '15px')
+            .style("background-color", d3.rgb(0, 0, 0, 0.7))
+            .style("color", 'white')
+            .style("border", "None")
+            .style("border-width", "1px")
+            .style("border-radius", "2px")
+            .style("padding", "7px")
+            .style('stroke', 'black')
+            .html((e, d) => {
+                return `qty : ${d.qty_pct}<br>cov : ${d.cov_lbl}<br>count : ${d.sub_count}`
+            });
+
+        svg.call(tip);
+
+        svg.selectAll()
+            .data(this.chart_dat)
+            .enter()
+            .append('rect')
+                .attr('x', d => this.x_scale(d.cov_lbl) + this.margin.left)
+                .attr('y', d => this.y_scale(d.qty_pct) + this.margin.top)
+                .attr('rx', 2)
+                .attr('ry', 2)
+                .attr('width', this.x_scale.bandwidth())
+                .attr('height', this.y_scale.bandwidth())
+                .attr('fill', d => this.color_scale(d.sub_count))
+                .style('stroke', 'white')
+                .style('fill-opacity', 0.7)
+                .on('mouseover', tip.show)
+                .on('mousemove', (d) => {this.highlight(d, this);})
+                .on('mouseleave', (d) => {this.unhighlight(d, this);})
+                .on('mouseout' , tip.hide)
+                .on('click', (d) => {d3.selectAll('#selected').remove()})
+                .call(
+                    d3.drag()
+                        .on('start', (e, d) => {
+                            this.dstartX = d3.select(e.sourceEvent.target).attr('x') - 2;
+                            this.dstartY = d3.select(e.sourceEvent.target).attr('y') - 2;
+                        })
+                        .on('drag', (e, d) => {
+                            d3.selectAll('#selected').remove();
+                            d3.select(this.node)
+                            .append('rect')
+                                .attr('id', 'selected')
+                                .attr('x', Math.min(this.dstartX, e.x))
+                                .attr('y', Math.min(this.dstartY, e.y))
+                                .attr('fill', d3.rgb(0, 0, 10, 0.2))
+                                .attr('width', Math.abs(this.dstartX - Math.min(e.x, this.width - this.margin.right)))
+                                .attr('height', Math.abs(this.dstartY - Math.min(e.y, this.height - this.margin.bottom)))
+                                .style('stroke', 'black')
+                                .style('stroke-width', '0.5')
+                                .on('click', (d) => {d3.selectAll('#selected').remove()})
+                        })
+                        .on('end', (e, d) => {
+                            console.log(e)
+                            console.log(d)
+                        })
+
+                )
+        ;
+        
+        const legend = svg.append("g")
+            .attr("transform", d => `translate(${this.margin.left},0)`);
+        
+        legend
+            .selectAll("rect")
+            .data(this.legendBins)
+            .enter()
+            .append("rect")
+            .attr("x", (d, i) => this.legendElementWidth * i)
+            .attr("y", this.height - this.margin.bottom + 2 * this.legendHeight )
+            .attr("width", this.legendElementWidth)
+            .attr("height", this.legendHeight)
+            .style("fill", d => this.color_scale(d));
+
+        legend
+            .selectAll("text")
+            .data(this.legendBins)
+            .enter()
+            .append("text")
+            .text(d => " ≥" + d.toExponential(1))
+            .attr("x", (d, i) => this.legendElementWidth * i + 5)
+            .attr("y", this.height - this.margin.bottom + (this.legendHeight * 4))
+            .style("font-size", "9pt")
+            .style("font-family", "Consolas, courier")
+            .style("fill", "#aaa")
+            .style('fill-opacity', 0.7);
+    }
+
+    highlight = (e) => {
+        d3
+            .select(e.target)
+            .style('stroke', 'gray')
+            .style('fill-opacity', 1)
+            // shrink a bit to make room for stroke, now visible
+            .attr('x', d => this.x_scale(d.cov_lbl) + this.margin.left + 2)
+            .attr('y', d => this.y_scale(d.qty_pct) + this.margin.top + 2)
+            .attr('width', this.x_scale.bandwidth() - 3)
+            .attr('height', this.y_scale.bandwidth() - 3)
+    }
+
+    unhighlight = (e) => {
+        d3
+            .select(e.target)
+            .attr('x', d => this.x_scale(d.cov_lbl) + this.margin.left)
+            .attr('y', d => this.y_scale(d.qty_pct) + this.margin.top)
+            .attr('width', this.x_scale.bandwidth())
+            .attr('height', this.y_scale.bandwidth())
+            .style('stroke', 'white')
+            .style('fill-opacity', 0.7)
+    }
+
+    render() {
+        return (
+            <svg
+                ref={(node) => {this.node = node}}
+                width={this.width}
+                height={this.height}>
+            </svg>
+        );
+    }
+
+}
+
+export default HeatMap
