@@ -24,4 +24,4 @@ front/yarn-debug.log*
 front/yarn-error.log*
 
 # back
-back/__pycache__
+backend/__pycache__
