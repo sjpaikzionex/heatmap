@@ -1,18 +1,20 @@
 import json
 from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
-import pyodbc
-import pandas
+from heatmapController import HeatMapController
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/', methods=['GET'])
-def get_data():
-    con = pyodbc.connect(
+start_date = '2018-01-01'
+end_date = '2021-03-31'
+controller = HeatMapController(start_date=start_date, end_date=end_date)
 
-    )
-    pass
+@app.route('/', methods=['GET'])
+def get_binned_count():
+    df_binned_cnt = controller.get_binned_info()
+    return df_binned_cnt.to_json(orient='records')
+
 
 @app.route('/drag', methods=['POST'])
 def filter_data():

@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import d3Tip from 'd3-tip';
 const d3 = require('d3')
 
+const host = 'localhost:5000';
+const api_url = `https://${host}`
+
 class HeatMap extends Component {
     constructor(props) {
         super(props)
