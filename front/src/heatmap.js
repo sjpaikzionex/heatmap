@@ -46,7 +46,7 @@ class HeatMap extends Component {
             for (let j = 0; j < this.x_label.length; j++) {
                 ra[i + j] = {
                     qty_pct: grp_dat[parseInt(i / this.x_label.length)].qty_pct,
-                    cov_lbl: 'cov_' + (j + 1).toString().padStart(2, '0'), 
+                    cov_lbl: 'cov_' + (j + 1).toString().padStart(2, '0'),
                     sub_count: grp_dat[parseInt(i / this.x_label.length)]['cov_' + (j + 1).toString().padStart(2, '0')]
                 }
             }
@@ -59,7 +59,7 @@ class HeatMap extends Component {
         const node = this.node
         const svg = d3.select(node)
 
-        svg 
+        svg
             .append('g')
                 .attr("transform", `translate(${this.margin.left}, 0)`)
                 .call(d3.axisBottom(this.x_scale).tickSize(0))
@@ -68,15 +68,15 @@ class HeatMap extends Component {
                 // .attr("y", 5)
                     .style("text-anchor", "center")
                     .style("fill", "#777");
-        
-        svg 
+
+        svg
             .append('g')
                 .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
                 .call(d3.axisLeft(this.y_scale).tickSize(0).tickPadding(7))
                 .call(g => g.select(".domain").remove())
                 .selectAll("text")
                     .style("fill", "#777");
-        
+
         svg
             .selectAll('g')
             .data(this.chart_dat)
@@ -107,6 +107,7 @@ class HeatMap extends Component {
             .data(this.chart_dat)
             .enter()
             .append('rect')
+                .attr('id', 'heatbox')
                 .attr('x', d => this.x_scale(d.cov_lbl) + this.margin.left)
                 .attr('y', d => this.y_scale(d.qty_pct) + this.margin.top)
                 .attr('rx', 2)
@@ -133,7 +134,7 @@ class HeatMap extends Component {
                             d3.selectAll('#selected').remove();
                             this.cumm_dx += e.dx;
                             this.cumm_dy += e.dy;
-                            
+
                             if (this.cumm_dx < 0) {
                                 this.select_startX = Math.max(e.x + 1, this.margin.left)
                                 this.select_endX = this.drag_startX + this.x_scale.bandwidth()
@@ -190,18 +191,38 @@ class HeatMap extends Component {
                                     .style('stroke', 'black')
                                     .style('stroke-width', '0.5')
                                     .on('click', (d) => {d3.selectAll('#selected').remove()});
-                            
-                            d3
-                                .selectAll('rect')
+
+                            const selected = d3.select('#selected')
+                            const selected_x1 = parseFloat(selected.attr('x'))
+                            const selected_y1 = parseFloat(selected.attr('y'))
+                            const selected_x2 = parseFloat(selected.attr('x')) + parseFloat(selected.attr('width'))
+                            const selected_y2 = parseFloat(selected.attr('y')) + parseFloat(selected.attr('height'))
+                            const coord_to_idx = []
+
+                            const c_x1 = (selected_x1 - this.margin.left) / this.x_scale.bandwidth()
+                            const c_x2 = (selected_x2 - this.margin.left - this.x_scale.bandwidth()) / this.x_scale.bandwidth()
+                            const c_y1 = (selected_y1 - this.margin.top) / this.y_scale.bandwidth()
+                            const c_y2 = (selected_y2 - this.margin.top - this.y_scale.bandwidth()) / this.y_scale.bandwidth()
+
+                            for (let i = c_y1; i <= c_y2; i++) {
+                                for (let j = c_x1; j <= c_x2; j++) {
+                                    coord_to_idx.push((this.x_label.length - 1 - i) * this.y_label.length + j)
+                                }
+                            }
+
+                            const selected_rects = d3
+                                .selectAll('#heatbox')
                                 .filter((d, i) => {
-                                    console.log(d3.select(d))
-                                });
+                                    return coord_to_idx.includes(i)
+                                })
+                                .data()
+                            console.log(selected_rects)
                         })
                 );
-        
+
         const legend = svg.append("g")
             .attr("transform", d => `translate(${this.margin.left},0)`);
-        
+
         legend
             .selectAll("rect")
             .data(this.legendBins)
