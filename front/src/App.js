@@ -1,4 +1,3 @@
-import './App.css';
 import HeatMap from './heatmap';
 
 function App () {

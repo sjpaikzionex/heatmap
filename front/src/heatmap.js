@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import d3Tip from 'd3-tip';
 import axios from 'axios'
-
 const d3 = require('d3')
-
 
 class HeatMap extends Component {
     constructor(props) {
         super(props)
-        // this.data = props.data
         this.width = props.size[0]
         this.height = props.size[1]
         this.createHeatMap.bind(this);

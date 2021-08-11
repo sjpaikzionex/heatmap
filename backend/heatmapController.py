@@ -1,7 +1,6 @@
 import pyodbc
 import pandas as pd
 import numpy as np
-from collections import defaultdict
 
 class HeatMapController:
     def __init__(self, start_date, end_date):
@@ -105,4 +104,3 @@ class HeatMapController:
             self.targets.extend(self.binned[d['qty_pct']][d['cov_lbl']])
 
         return self.targets
-
