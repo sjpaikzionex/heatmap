@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import d3Tip from 'd3-tip';
-import axios from 'axios'
-const d3 = require('d3')
+import axios from 'axios';
+const d3 = require('d3');
 
 class HeatMap extends Component {
     constructor(props) {
-        super(props)
-        this.width = props.size[0]
-        this.height = props.size[1]
+        super(props);
+        this.width = props.size[0];
+        this.height = props.size[1];
         this.createHeatMap.bind(this);
     }
 
@@ -33,14 +33,14 @@ class HeatMap extends Component {
                     .scaleSequential(d3.interpolateOrRd)
                     .domain([0, d3.max(this.chart_dat, d => d.sub_count)]);
 
-                this.valRange = [0, d3.max(this.chart_dat, d => d.sub_count)]
-                this.legendBins = [...Array(9).keys()].map(x => d3.quantile(this.valRange, x * 0.1))
-                this.legendHeight = 20
-                this.legendElementWidth = 56
+                this.valRange = [0, d3.max(this.chart_dat, d => d.sub_count)];
+                this.legendBins = [...Array(9).keys()].map(x => d3.quantile(this.valRange, x * 0.1));
+                this.legendHeight = 20;
+                this.legendElementWidth = 56;
                 this.createHeatMap();
             })
             .catch(error => {
-                console.log(error)
+                console.log(error);
             });
 
     }
@@ -50,7 +50,7 @@ class HeatMap extends Component {
     }
 
     process_data = (grp_dat) => {
-        let ra = Array(grp_dat.length * this.x_label.length)
+        let ra = Array(grp_dat.length * this.x_label.length);
 
         for (let i = 0; i < ra.length; i += this.x_label.length) {
             for (let j = 0; j < this.x_label.length; j++) {
@@ -66,8 +66,8 @@ class HeatMap extends Component {
     }
 
     createHeatMap() {
-        const node = this.node
-        const svg = d3.select(node)
+        const node = this.node;
+        const svg = d3.select(node);
 
         svg
             .append('g')
@@ -146,19 +146,19 @@ class HeatMap extends Component {
                             this.cumm_dy += e.dy;
 
                             if (this.cumm_dx < 0) {
-                                this.select_startX = Math.max(e.x + 1, this.margin.left)
-                                this.select_endX = this.drag_startX + this.x_scale.bandwidth()
+                                this.select_startX = Math.max(e.x + 1, this.margin.left);
+                                this.select_endX = this.drag_startX + this.x_scale.bandwidth();
                             } else {
                                 this.select_startX = this.drag_startX;
-                                this.select_endX = Math.min(e.x - 1, this.width - this.margin.right)
+                                this.select_endX = Math.min(e.x - 1, this.width - this.margin.right);
                             }
 
                             if (this.cumm_dy < 0) {
-                                this.select_startY = Math.max(e.y + 1, this.margin.top)
-                                this.select_endY = this.drag_startY + this.y_scale.bandwidth()
+                                this.select_startY = Math.max(e.y + 1, this.margin.top);
+                                this.select_endY = this.drag_startY + this.y_scale.bandwidth();
                             } else {
                                 this.select_startY = this.drag_startY;
-                                this.select_endY = Math.min(e.y - 1, this.height - this.margin.bottom)
+                                this.select_endY = Math.min(e.y - 1, this.height - this.margin.bottom);
                             }
 
                             d3.select(this.node)
@@ -171,7 +171,7 @@ class HeatMap extends Component {
                                     .attr('height', Math.abs(this.select_startY - this.select_endY))
                                     .style('stroke', 'black')
                                     .style('stroke-width', '0.5')
-                                    .on('click', (d) => {d3.selectAll('#selected').remove()})
+                                    .on('click', (d) => {d3.selectAll('#selected').remove();});
                         })
                         .on('end', (e, d) => {
                             const endrect_x = parseFloat(d3.select(e.sourceEvent.toElement).attr('x'));
@@ -208,21 +208,21 @@ class HeatMap extends Component {
                                     .style('stroke-width', '0.5')
                                     .on('click', (d) => {d3.selectAll('#selected').remove()});
 
-                            const selected = d3.select('#selected')
-                            const selected_x1 = parseFloat(selected.attr('x'))
-                            const selected_y1 = parseFloat(selected.attr('y'))
-                            const selected_x2 = parseFloat(selected.attr('x')) + parseFloat(selected.attr('width'))
-                            const selected_y2 = parseFloat(selected.attr('y')) + parseFloat(selected.attr('height'))
-                            const coord_to_idx = []
+                            const selected = d3.select('#selected');
+                            const selected_x1 = parseFloat(selected.attr('x'));
+                            const selected_y1 = parseFloat(selected.attr('y'));
+                            const selected_x2 = parseFloat(selected.attr('x')) + parseFloat(selected.attr('width'));
+                            const selected_y2 = parseFloat(selected.attr('y')) + parseFloat(selected.attr('height'));
+                            const coord_to_idx = [];
 
-                            const c_x1 = (selected_x1 - this.margin.left) / this.x_scale.bandwidth()
-                            const c_x2 = (selected_x2 - this.margin.left - this.x_scale.bandwidth()) / this.x_scale.bandwidth()
-                            const c_y1 = (selected_y1 - this.margin.top) / this.y_scale.bandwidth()
-                            const c_y2 = (selected_y2 - this.margin.top - this.y_scale.bandwidth()) / this.y_scale.bandwidth()
+                            const c_x1 = (selected_x1 - this.margin.left) / this.x_scale.bandwidth();
+                            const c_x2 = (selected_x2 - this.margin.left - this.x_scale.bandwidth()) / this.x_scale.bandwidth();
+                            const c_y1 = (selected_y1 - this.margin.top) / this.y_scale.bandwidth();
+                            const c_y2 = (selected_y2 - this.margin.top - this.y_scale.bandwidth()) / this.y_scale.bandwidth();
 
                             for (let i = c_y1; i <= c_y2; i++) {
                                 for (let j = c_x1; j <= c_x2; j++) {
-                                    coord_to_idx.push((this.x_label.length - 1 - i) * this.y_label.length + j)
+                                    coord_to_idx.push((this.x_label.length - 1 - i) * this.y_label.length + j);
                                 }
                             }
 
@@ -231,16 +231,16 @@ class HeatMap extends Component {
                                 .filter((d, i) => {
                                     return coord_to_idx.includes(i)
                                 })
-                                .data()
+                                .data();
 
                             axios
                                 .post('http://localhost:5000/drag', selected_rects)
                                 .then(response => {
-                                    console.log(response)
+                                    console.log(response);
                                 })
                                 .catch(error => {
-                                    console.log(error)
-                                })
+                                    console.log(error);
+                                });
                         })
                 );
 
@@ -281,7 +281,7 @@ class HeatMap extends Component {
             .attr('x', d => this.x_scale(d.cov_lbl) + this.margin.left + 1)
             .attr('y', d => this.y_scale(d.qty_pct) + this.margin.top + 1)
             .attr('width', this.x_scale.bandwidth() - 2)
-            .attr('height', this.y_scale.bandwidth() - 2)
+            .attr('height', this.y_scale.bandwidth() - 2);
     }
 
     unhighlight = (e) => {
@@ -292,7 +292,7 @@ class HeatMap extends Component {
             .attr('width', this.x_scale.bandwidth())
             .attr('height', this.y_scale.bandwidth())
             .style('stroke', 'white')
-            .style('fill-opacity', 0.7)
+            .style('fill-opacity', 0.7);
     }
 
     render() {
