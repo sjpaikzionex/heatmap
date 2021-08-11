@@ -10,6 +10,7 @@ class HeatMapController:
         self.df = self.get_data()
         self.df_stat = self.get_stat()
         self.binned = {}
+        self.targets = []
 
     def get_data(self):
         data_qry = f"""
@@ -69,8 +70,8 @@ class HeatMapController:
         sum_bins = np.linspace(0, 1, sum_bin_cnt, endpoint=False)
         cov_bins = np.linspace(min(0, self.df_stat['cov'].min()), 2, cov_bin_cnt, endpoint=False)
 
-        df_binned_cnt = pd.DataFrame(columns=['pct_rnk'] + ['%.2f' % b for b in cov_bins])
-        df_binned_cnt['pct_rnk'] = [int(s * 100) for s in sum_bins]
+        df_binned_cnt = pd.DataFrame(columns=['qty_pct'] + ['%.2f' % b for b in cov_bins])
+        df_binned_cnt['qty_pct'] = [int(s * 100) for s in sum_bins]
 
         for i in range(len(sum_bins) - 1):
             self.binned[int(sum_bins[i] * 100)] = {}
@@ -78,22 +79,30 @@ class HeatMapController:
 
             for j in range(len(cov_bins) - 1):
                 binned = qty_bin.loc[cov_bins[j] <= qty_bin['cov']].loc[qty_bin['cov'] < cov_bins[j + 1]].copy()
-                df_binned_cnt.loc[df_binned_cnt['pct_rnk'] == int(sum_bins[i] * 100), '%.2f' % cov_bins[j]] = binned.shape[0]
-                self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[j]] = binned[['item_cd', 'account_cd']].to_numpy()
+                df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[i] * 100), '%.2f' % cov_bins[j]] = binned.shape[0]
+                self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[j]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
 
             binned = qty_bin.loc[qty_bin['cov'] >= cov_bins[-1]].copy()
-            df_binned_cnt.loc[df_binned_cnt['pct_rnk'] == int(sum_bins[i] * 100), '%.2f' % cov_bins[-1]] = binned.shape[0]
-            self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[-1]] = binned[['item_cd', 'account_cd']].to_numpy()
+            df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[i] * 100), '%.2f' % cov_bins[-1]] = binned.shape[0]
+            self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[-1]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
 
-        self.binned[sum_bins[-1]] = {}
+        self.binned[int(sum_bins[-1] * 100)] = {}
         qty_bin = self.df_stat.loc[self.df_stat['pct_rank_qty'] >= sum_bins[-1]].copy()
         for j in range(len(cov_bins) - 1):
             binned = qty_bin.loc[cov_bins[j] <= qty_bin['cov']].loc[qty_bin['cov'] < cov_bins[j + 1]].copy()
-            df_binned_cnt.loc[df_binned_cnt['pct_rnk'] == int(sum_bins[-1] * 100), '%.2f' % cov_bins[j]] = binned.shape[0]
-            self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[j]] = binned[['item_cd', 'account_cd']].to_numpy()
+            df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[-1] * 100), '%.2f' % cov_bins[j]] = binned.shape[0]
+            self.binned[int(sum_bins[-1] * 100)]['%.2f' % cov_bins[j]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
 
         binned = qty_bin[qty_bin['cov'] >= cov_bins[-1]].copy()
-        df_binned_cnt.loc[df_binned_cnt['pct_rnk'] == int(sum_bins[-1] * 100), '%.2f' % cov_bins[-1]] = binned.shape[0]
-        self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[-1]] = binned[['item_cd', 'account_cd']].to_numpy()
+        df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[-1] * 100), '%.2f' % cov_bins[-1]] = binned.shape[0]
+        self.binned[int(sum_bins[-1] * 100)]['%.2f' % cov_bins[-1]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
 
         return df_binned_cnt
+
+    def get_targets(self, json_data):
+        self.targets = []
+        for d in json_data:
+            self.targets.extend(self.binned[d['qty_pct']][d['cov_lbl']])
+
+        return self.targets
+

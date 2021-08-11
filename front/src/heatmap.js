@@ -1,41 +1,51 @@
 import React, { Component } from 'react';
 import d3Tip from 'd3-tip';
+import axios from 'axios'
+
 const d3 = require('d3')
 
-const host = 'localhost:5000';
-const api_url = `https://${host}`
 
 class HeatMap extends Component {
     constructor(props) {
         super(props)
-        this.data = props.data
+        // this.data = props.data
         this.width = props.size[0]
         this.height = props.size[1]
-        this.x_label = this.data.columns.slice(1, );
-        this.y_label = Array.from(new Set(d3.map(this.data, d => d.qty_pct)));
-        this.chart_dat = this.process_data(this.data);
-        this.margin = ({ top: 20, left: 20, right: 20, bottom: 80 });
-        this.y_scale = d3
-            .scaleBand()
-            .domain(this.y_label)
-            .range([this.height - this.margin.bottom - this.margin.top, 0]);
-        this.x_scale = d3
-            .scaleBand()
-            .domain(this.x_label)
-            .range([0, this.width - this.margin.left - this.margin.right]);
-        this.color_scale = d3
-            .scaleSequential(d3.interpolateOrRd)
-            .domain([0, d3.max(this.chart_dat, d => d.sub_count)]);
-
-        this.valRange = [0, d3.max(this.chart_dat, d => d.sub_count)]
-        this.legendBins = [...Array(9).keys()].map(x => d3.quantile(this.valRange, x * 0.1))
-        this.legendHeight = 20
-        this.legendElementWidth = 56
         this.createHeatMap.bind(this);
     }
 
     componentDidMount() {
-        this.createHeatMap();
+        axios
+            .get('http://localhost:5000/')
+            .then(response => {
+                console.log('load success');
+                this.data = response.data
+                this.x_label = Object.keys(this.data[0]).slice(1, );
+                this.y_label = Array.from(new Set(d3.map(this.data, d => d.qty_pct)));
+                this.chart_dat = this.process_data(this.data);
+                this.margin = ({ top: 20, left: 20, right: 20, bottom: 80 });
+                this.y_scale = d3
+                    .scaleBand()
+                    .domain(this.y_label)
+                    .range([this.height - this.margin.bottom - this.margin.top, 0]);
+                this.x_scale = d3
+                    .scaleBand()
+                    .domain(this.x_label)
+                    .range([0, this.width - this.margin.left - this.margin.right]);
+                this.color_scale = d3
+                    .scaleSequential(d3.interpolateOrRd)
+                    .domain([0, d3.max(this.chart_dat, d => d.sub_count)]);
+
+                this.valRange = [0, d3.max(this.chart_dat, d => d.sub_count)]
+                this.legendBins = [...Array(9).keys()].map(x => d3.quantile(this.valRange, x * 0.1))
+                this.legendHeight = 20
+                this.legendElementWidth = 56
+                this.createHeatMap();
+            })
+            .catch(error => {
+                console.log(error)
+            });
+
     }
 
     componentDidUpdate() {
@@ -49,8 +59,8 @@ class HeatMap extends Component {
             for (let j = 0; j < this.x_label.length; j++) {
                 ra[i + j] = {
                     qty_pct: grp_dat[parseInt(i / this.x_label.length)].qty_pct,
-                    cov_lbl: 'cov_' + (j + 1).toString().padStart(2, '0'),
-                    sub_count: grp_dat[parseInt(i / this.x_label.length)]['cov_' + (j + 1).toString().padStart(2, '0')]
+                    cov_lbl: this.x_label[j],
+                    sub_count: grp_dat[parseInt(i / this.x_label.length)][this.x_label[j]]
                 }
             }
         }
@@ -171,15 +181,21 @@ class HeatMap extends Component {
                             const endrect_y = parseFloat(d3.select(e.sourceEvent.toElement).attr('y'));
 
                             if (this.cumm_dx < 0) {
-                                this.select_startX = Math.max(endrect_x, this.margin.left);
+                                this.select_startX = Math.max(Number.isNaN(endrect_x) ? 0 : endrect_x, this.margin.left);
                             } else {
-                                this.select_endX = Math.min(endrect_x + this.x_scale.bandwidth(), this.width - this.margin.right);
+                                this.select_endX = Math.min(
+                                    Number.isNaN(endrect_x) ? (this.width - this.margin.right) : (endrect_x + this.x_scale.bandwidth()),
+                                    this.width - this.margin.right
+                                );
                             }
 
                             if (this.cumm_dy < 0) {
-                                this.select_startY = Math.max(endrect_y, this.margin.top);
+                                this.select_startY = Math.max(Number.isNaN(endrect_y) ? 0 : endrect_y, this.margin.top);
                             } else {
-                                this.select_endY = Math.min(endrect_y + this.y_scale.bandwidth(), this.height - this.margin.bottom);
+                                this.select_endY = Math.min(
+                                    Number.isNaN(endrect_y) ? (this.height - this.margin.bottom) : (endrect_y + this.y_scale.bandwidth()),
+                                    this.height - this.margin.bottom
+                                );
                             }
 
                             d3.selectAll('#selected').remove();
@@ -219,7 +235,15 @@ class HeatMap extends Component {
                                     return coord_to_idx.includes(i)
                                 })
                                 .data()
-                            console.log(selected_rects)
+
+                            axios
+                                .post('http://localhost:5000/drag', selected_rects)
+                                .then(response => {
+                                    console.log(response)
+                                })
+                                .catch(error => {
+                                    console.log(error)
+                                })
                         })
                 );
 
