@@ -19,9 +19,11 @@ def get_binned_count():
 @app.route('/drag', methods=['POST'])
 def filter_data():
     dragged = request.json
-    print(controller.get_targets(dragged))
+    targets = controller.get_targets(dragged)
+    print(targets)
 
-    return jsonify(message='Drag Succesful')
+    return jsonify(message='Drag Succesful', data=targets)
+
 
 if __name__ == '__main__':
     app.run(
