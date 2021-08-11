@@ -75,7 +75,7 @@ class HeatMap extends Component {
                 .call(d3.axisBottom(this.x_scale).tickSize(0))
                 .call(g => g.select(".domain").remove())
                 .selectAll("text")
-                // .attr("y", 5)
+                    .attr("y", 7)
                     .style("text-anchor", "center")
                     .style("fill", "#777");
 

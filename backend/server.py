@@ -1,4 +1,3 @@
-import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from heatmapController import HeatMapController
@@ -21,7 +20,6 @@ def get_binned_count():
 def filter_data():
     dragged = request.json
     targets = controller.get_targets(dragged)
-    print(targets)
 
     return jsonify(message='Drag Succesful', data=targets)
 
