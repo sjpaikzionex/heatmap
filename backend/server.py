@@ -23,6 +23,13 @@ def filter_data():
 
     return jsonify(message='Drag Succesful', data=targets)
 
+@app.route('/target_count', methods=['POST'])
+def get_target_count():
+    cnt = request.json
+    print(cnt)
+
+    return jsonify(message='Target Count Received', data=cnt)
+
 
 if __name__ == '__main__':
     app.run(

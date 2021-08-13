@@ -17,8 +17,9 @@ class HeatMap extends Component {
             .then(response => {
                 console.log('load success');
                 this.data = response.data
-                this.x_label = Object.keys(this.data[0]).slice(1, );
+                this.x_label = Object.keys(this.data[0]).slice(1, -1);
                 this.y_label = Array.from(new Set(d3.map(this.data, d => d.qty_pct)));
+                console.log(this.right_label)
                 this.chart_dat = this.process_data(this.data);
                 this.margin = ({ top: 20, left: 20, right: 20, bottom: 80 });
                 this.y_scale = d3
@@ -30,7 +31,7 @@ class HeatMap extends Component {
                     .domain(this.x_label)
                     .range([0, this.width - this.margin.left - this.margin.right]);
                 this.color_scale = d3
-                    .scaleSequential(d3.interpolateOrRd)
+                    .scaleSequential(d3.interpolateYlOrRd)
                     .domain([0, d3.max(this.chart_dat, d => d.sub_count)]);
 
                 this.valRange = [0, d3.max(this.chart_dat, d => d.sub_count)];

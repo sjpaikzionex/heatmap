@@ -79,22 +79,24 @@ class HeatMapController:
             for j in range(len(cov_bins) - 1):
                 binned = qty_bin.loc[cov_bins[j] <= qty_bin['cov']].loc[qty_bin['cov'] < cov_bins[j + 1]].copy()
                 df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[i] * 100), '%.2f' % cov_bins[j]] = binned.shape[0]
-                self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[j]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
+                self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[j]] = binned.to_numpy().tolist()
 
             binned = qty_bin.loc[qty_bin['cov'] >= cov_bins[-1]].copy()
             df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[i] * 100), '%.2f' % cov_bins[-1]] = binned.shape[0]
-            self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[-1]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
+            self.binned[int(sum_bins[i] * 100)]['%.2f' % cov_bins[-1]] = binned.to_numpy().tolist()
 
         self.binned[int(sum_bins[-1] * 100)] = {}
         qty_bin = self.df_stat.loc[self.df_stat['pct_rank_qty'] >= sum_bins[-1]].copy()
         for j in range(len(cov_bins) - 1):
             binned = qty_bin.loc[cov_bins[j] <= qty_bin['cov']].loc[qty_bin['cov'] < cov_bins[j + 1]].copy()
             df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[-1] * 100), '%.2f' % cov_bins[j]] = binned.shape[0]
-            self.binned[int(sum_bins[-1] * 100)]['%.2f' % cov_bins[j]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
+            self.binned[int(sum_bins[-1] * 100)]['%.2f' % cov_bins[j]] = binned.to_numpy().tolist()
 
         binned = qty_bin[qty_bin['cov'] >= cov_bins[-1]].copy()
         df_binned_cnt.loc[df_binned_cnt['qty_pct'] == int(sum_bins[-1] * 100), '%.2f' % cov_bins[-1]] = binned.shape[0]
-        self.binned[int(sum_bins[-1] * 100)]['%.2f' % cov_bins[-1]] = binned[['item_cd', 'account_cd']].to_numpy().tolist()
+        self.binned[int(sum_bins[-1] * 100)]['%.2f' % cov_bins[-1]] = binned.to_numpy().tolist()
+
+        df_binned_cnt['pct_cnt'] = df_binned_cnt.iloc[:, 1:].apply(sum, axis=1)
 
         return df_binned_cnt
 
