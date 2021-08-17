@@ -24,7 +24,6 @@ class Threshold extends Component {
 
         if (e.target.name === 'cpu') {
             //20 cpu, 1h = 1000 items
-            // console.log(this.state.cpu)
             if (e.target.value === '') {
                 this.setState({
                     'time': ''
@@ -36,23 +35,25 @@ class Threshold extends Component {
                 });
             }
         }
+        if (e.target.name === 'time') {
+            let new_count = this.state.cpu / 20 * e.target.value / 1 * 1000;
+
+            if (this.state.cpu === '' || e.target.value === '') {
+                new_count = 1000;
+            }
+
+            this.setState({
+                'target_count': parseInt(new_count)
+            });
+        }
     }
 
     handleSubmit = (e) => {
         e.preventDefault();
         d3.selectAll('#selected').remove()
+        const target_count = this.state.target_count;
 
-        let new_count = this.state.cpu / 20 * this.state.time / 1 * 1000;
-
-        if (this.state.cpu === '' || this.state.time === '') {
-            new_count = 1000;
-        }
-
-        this.setState({
-            'target_count': parseInt(new_count)
-        });
         let dat = Array.from(d3.selectAll('#heatbox').data());
-
         dat.sort((a, b) => {
             if (a.qty_pct < b.qty_pct)
                 return 1;
@@ -77,7 +78,7 @@ class Threshold extends Component {
                 selected.push(dat[i]);
                 select_count += dat[i].sub_count;
             }
-            if (select_count >= new_count) {
+            if (select_count >= target_count) {
                 break;
             }
         }
@@ -95,7 +96,7 @@ class Threshold extends Component {
             })
         }
 
-        const map = d3.select('svg')
+        const map = d3.select('#heatmap')
 
         for (let i = 0; i < selectXY.length; i++) {
             map
@@ -118,16 +119,6 @@ class Threshold extends Component {
             .catch(error => {
                 console.log(error);
             });
-
-
-        // axios
-        //     .post('http://localhost:5000/target_count', {target_count: new_count})
-        //     .then(response => {
-        //         console.log(response);
-        //     })
-        //     .catch(error => {
-        //         console.log(error);
-        //     });
     }
 
     render() {
@@ -137,7 +128,6 @@ class Threshold extends Component {
                     <div className='threshold-container'>
                         <input type='text' name='cpu' placeholder='Total CPU' value={this.state.cpu} onChange={this.handleChange}/>
                         <input type='text' name='time' placeholder='Process Time' value={this.state.time} onChange={this.handleChange}/>
-                        <input type='submit' value='search' />
                         <label>Target Count: {this.state.target_count}</label>
                         <label>max cov</label>
                         <Range
@@ -217,6 +207,9 @@ class Threshold extends Component {
                                 </div>
                             )}
                         />
+                    </div>
+                    <div className='form-submit'>
+                        <input type='submit' value='search' />
                     </div>
                 </form>
             </div>

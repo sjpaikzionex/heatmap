@@ -314,6 +314,7 @@ class HeatMap extends Component {
         return (
             <svg
                 ref={(node) => {this.node = node}}
+                id={'heatmap'}
                 width={this.width}
                 height={this.height}>
             </svg>

@@ -21,7 +21,7 @@ def filter_data():
     dragged = request.json
     targets = controller.get_targets(dragged)
 
-    return jsonify(message='Drag Succesful', data=targets)
+    return targets.to_json(orient='records')
 
 @app.route('/target_count', methods=['POST'])
 def get_target_count():
