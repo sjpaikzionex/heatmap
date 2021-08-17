@@ -7,7 +7,7 @@ class App extends Component {
     render () {
         return (
             <div>
-                <HeatMap size={[800, 500]}/>
+                <HeatMap size={[820, 500]}/>
                 <Threshold />
             </div>
         );

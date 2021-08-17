@@ -19,9 +19,16 @@ class HeatMap extends Component {
                 this.data = response.data
                 this.x_label = Object.keys(this.data[0]).slice(1, -1);
                 this.y_label = Array.from(new Set(d3.map(this.data, d => d.qty_pct)));
-                console.log(this.right_label)
+                this.right_label = []
+                for (let i = 0; i < this.data.length; i++) {
+                    this.right_label.push(this.data[i].pct_cnt.toString())
+                }
                 this.chart_dat = this.process_data(this.data);
-                this.margin = ({ top: 20, left: 20, right: 20, bottom: 80 });
+                this.margin = ({ top: 20, left: 20, right: 40, bottom: 80 });
+                this.right_scale = d3
+                    .scaleBand()
+                    .domain(d3.range(this.right_label.length))
+                    .range([this.height - this.margin.bottom - this.margin.top, 0]);
                 this.y_scale = d3
                     .scaleBand()
                     .domain(this.y_label)
@@ -43,7 +50,6 @@ class HeatMap extends Component {
             .catch(error => {
                 console.log(error);
             });
-
     }
 
     componentDidUpdate() {
@@ -84,6 +90,14 @@ class HeatMap extends Component {
             .append('g')
                 .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
                 .call(d3.axisLeft(this.y_scale).tickSize(0).tickPadding(7))
+                .call(g => g.select(".domain").remove())
+                .selectAll("text")
+                    .style("fill", "#777");
+
+        svg
+            .append('g')
+                .attr('transform', `translate(${this.width - this.margin.right}, ${this.margin.top})`)
+                .call(d3.axisRight(this.right_scale).tickFormat((d, i) => this.right_label[i]).tickSize(2).tickPadding(7))
                 .call(g => g.select(".domain").remove())
                 .selectAll("text")
                     .style("fill", "#777");
