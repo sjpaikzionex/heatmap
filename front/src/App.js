@@ -10,7 +10,7 @@ class App extends Component {
                 <h3>Heat Map</h3>
                 <HeatMap size={[820, 500]}/>
                 <h3>Select Criteria</h3>
-                <Threshold />
+                <Threshold target_count={1000}/>
             </div>
         );
     }

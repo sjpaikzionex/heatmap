@@ -9,7 +9,7 @@ class HeatMapController:
         self.df = self.get_data()
         self.df_stat = self.get_stat()
         self.binned = {}
-        self.targets = []
+        self.targets = pd.DataFrame()
 
     def get_data(self):
         data_qry = f"""

@@ -23,6 +23,11 @@ def filter_data():
 
     return targets.to_json(orient='records')
 
+@app.route('/get_selected', methods=['GET'])
+def get_targets():
+    df_target = controller.targets
+    return df_target.to_json(orient='records')
+
 @app.route('/target_count', methods=['POST'])
 def get_target_count():
     cnt = request.json

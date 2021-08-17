@@ -14,6 +14,7 @@ class Threshold extends Component {
 
     constructor(props) {
         super(props);
+        this.target_count = props.target_count;
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -51,7 +52,7 @@ class Threshold extends Component {
     handleSubmit = (e) => {
         e.preventDefault();
         d3.selectAll('#selected').remove()
-        const target_count = this.state.target_count;
+        const target_count = this.target_count;
 
         let dat = Array.from(d3.selectAll('#heatbox').data());
         dat.sort((a, b) => {
@@ -68,7 +69,7 @@ class Threshold extends Component {
                 return -1;
 
             return 0;
-        })
+        });
 
         const maxCov = this.state.maxCov[0]
         const selected = [];
@@ -107,7 +108,6 @@ class Threshold extends Component {
                 .attr('width', boxwidth)
                 .attr('height', boxheight)
                 .attr('fill', d3.rgb(0, 0, 10, 0.2))
-                .attr('stroke', 'black')
                 .style('stroke-width', '0.5');
         }
 
@@ -126,9 +126,7 @@ class Threshold extends Component {
             <div>
                 <form onSubmit={this.handleSubmit}>
                     <div className='threshold-container'>
-                        <input type='text' name='cpu' placeholder='Total CPU' value={this.state.cpu} onChange={this.handleChange}/>
-                        <input type='text' name='time' placeholder='Process Time' value={this.state.time} onChange={this.handleChange}/>
-                        <label>Target Count: {this.state.target_count}</label>
+                        <label>Target Count: {this.target_count}</label>
                         <label>max cov</label>
                         <Range
                             label={true}
