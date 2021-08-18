@@ -7,31 +7,19 @@ class SelectedStat extends Component {
         super(props);
         this.width = props.size[0];
         this.height = props.size[1];
+        this.margin = {top: 20, bottom: 20, left: 20, right: 20};
+        this.labelHeight = 40
         console.log(props.trigger)
     }
 
-    componentDidMount() {
+    componentDidUpdate() {
         if (this.props.trigger === 1) {
             this.datarequest =
                 axios
                     .get('http://localhost:5000/get_selected')
                     .then(response => {
-                        console.log(response.data)
-                    })
-                    .catch(error => {
-                        console.log(error)
-                    });
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (this.props.trigger === 1) {
-            this.datarequest =
-                axios
-                    .get('http://localhost:5000/get_selected')
-                    .then(response => {
-                        console.log(response.data)
                         this.data = response.data
+                        d3.select(this.node).selectAll('*').remove();
                         this.createSelectedStat();
                     })
                     .catch(error => {
@@ -40,11 +28,50 @@ class SelectedStat extends Component {
         }
     }
 
+    getOverallStat() {
+        let stat = {
+            target_count: 0,
+            avg_freq: 0,
+            min_freq: 0,
+            max_freq: 0,
+            min_sum: 0,
+            max_sum: 0,
+            min_cov: 0,
+            max_cov: 0
+        };
+
+        stat.target_count = this.data.length;
+        for (let i = 0; i < stat.target_count; i++) {
+            stat.avg_freq += this.data[i].count;
+        }
+        stat.avg_freq = stat.avg_freq / stat.target_count;
+
+        return stat
+    }
+
     createSelectedStat() {
         const node = this.node;
         const svg = d3.select(node);
-        const target_count = this.data.length;
-        console.log(target_count)
+        const stat = this.getOverallStat();
+
+        svg
+            .append('g')
+                .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
+            .append('text')
+                .text('# Selected: ' + stat.target_count)
+                .style('font-family', 'Calibri')
+                .style("text-anchor", "center")
+                .style("fill", "#000");
+
+        svg
+            .append('g')
+                .attr("transform", `translate(${(this.width - this.margin.left - this.margin.right) / 3 + this.margin.left}, ${this.margin.top})`)
+            .append('text')
+                .text('Avg Freq: ' + parseInt(stat.avg_freq))
+                .style('font-family', 'Calibri')
+                .style("text-anchor", "center")
+                .style("fill", "#000");
+
 
 
     }

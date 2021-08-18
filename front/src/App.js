@@ -115,7 +115,7 @@ class App extends Component {
                     <button type='submit'>Search</button>
                 </form>
                 <h3>Selected Stat</h3>
-                <SelectedStat size={[300, 800]} trigger={this.state.clicked} />
+                <SelectedStat size={[450, 800]} trigger={this.state.clicked} />
             </div>
         );
     }

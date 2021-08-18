@@ -11,6 +11,10 @@ class HeatMapController:
         self.binned = {}
         self.targets = pd.DataFrame()
 
+    def set_dates(self, dates):
+        self.start_date = dates['fromDate']
+        self.end_date = dates['toDate']
+
     def get_data(self):
         data_qry = f"""
             SELECT I.ITEM_CD

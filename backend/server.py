@@ -9,6 +9,13 @@ start_date = '2018-01-01'
 end_date = '2021-03-31'
 controller = HeatMapController(start_date=start_date, end_date=end_date)
 
+@app.route('/set_dates', methods=['POST'])
+def set_dates():
+    dates = request.json
+    controller.set_dates(dates)
+
+    return jsonify(message='Dates Registered')
+
 
 @app.route('/', methods=['GET'])
 def get_binned_count():
