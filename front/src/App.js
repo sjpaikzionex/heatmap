@@ -2,6 +2,7 @@ import { Component } from 'react';
 import HeatMap from './heatmap';
 import axios from 'axios';
 import SliderWrapper from './sliderWrapper';
+import SelectedStat from './selectedstat';
 const d3 = require('d3');
 
 
@@ -9,13 +10,24 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.rangehandler = this.rangehandler.bind(this)
+        this.selecthandler = this.selecthandler.bind(this)
+        this.state = {
+            clicked: 0,
+            maxCov: [1.5],
+            target_count: 1000
+        }
     }
 
-    target_count = 1000;
-    maxCov = [1.5]
-
     rangehandler(v) {
-        this.maxCov = v
+        this.setState({
+            maxCov: v
+        })
+    }
+
+    selecthandler() {
+        this.setState({
+            clicked: 1
+        })
     }
 
     handleSubmit = (e) => {
@@ -39,7 +51,7 @@ class App extends Component {
             return 0;
         });
 
-        const maxCov = this.maxCov[0]
+        const maxCov = this.state.maxCov[0]
         const selected = [];
         let select_count = 0;
         for (let i = 0; i < dat.length; i++) {
@@ -47,7 +59,7 @@ class App extends Component {
                 selected.push(dat[i]);
                 select_count += dat[i].sub_count;
             }
-            if (select_count >= this.target_count) {
+            if (select_count >= this.state.target_count) {
                 break;
             }
         }
@@ -83,6 +95,7 @@ class App extends Component {
         axios
             .post('http://localhost:5000/drag', selected)
             .then(response => {
+                this.selecthandler();
                 console.log(response);
             })
             .catch(error => {
@@ -94,13 +107,15 @@ class App extends Component {
         return (
             <div>
                 <h3>Heat Map</h3>
-                <HeatMap size={[820, 500]}/>
+                <HeatMap size={[820, 500]} select_handler={this.selecthandler}/>
                 <h3>Select Criteria</h3>
-                <h5>Target Count: {this.target_count}</h5>
+                <h5>Target Count: {this.state.target_count}</h5>
                 <form onSubmit={this.handleSubmit}>
                     <SliderWrapper handler={this.rangehandler}/>
                     <button type='submit'>Search</button>
                 </form>
+                <h3>Selected Stat</h3>
+                <SelectedStat size={[300, 800]} trigger={this.state.clicked} />
             </div>
         );
     }

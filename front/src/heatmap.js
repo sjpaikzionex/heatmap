@@ -52,10 +52,6 @@ class HeatMap extends Component {
             });
     }
 
-    componentDidUpdate() {
-        this.createHeatMap();
-    }
-
     process_data = (grp_dat) => {
         let ra = Array(grp_dat.length * this.x_label.length);
 
@@ -251,6 +247,7 @@ class HeatMap extends Component {
                             axios
                                 .post('http://localhost:5000/drag', selected_rects)
                                 .then(response => {
+                                    this.props.select_handler()
                                     console.log(response);
                                 })
                                 .catch(error => {
