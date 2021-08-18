@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Range, getTrackBackground } from 'react-range';
 import './threshold.css';
 
-class Threshold extends Component {
+class SliderWrapper extends Component {
     state = {
         maxCov: [1.5]
     }
@@ -104,4 +104,4 @@ class Threshold extends Component {
     }
 }
 
-export default Threshold;
+export default SliderWrapper;

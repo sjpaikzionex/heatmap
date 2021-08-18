@@ -2,7 +2,7 @@ import { Component } from 'react';
 import HeatMap from './heatmap';
 import { Range, getTrackBackground } from 'react-range';
 import axios from 'axios';
-import Threshold from './threshold';
+import SliderWrapper from './sliderWrapper';
 const d3 = require('d3');
 
 
@@ -97,7 +97,7 @@ class App extends Component {
                 <HeatMap size={[820, 500]}/>
                 <h3>Select Criteria</h3>
                 <form onSubmit={this.handleSubmit}>
-                    <Threshold handler={this.rangehandler}/>
+                    <SliderWrapper handler={this.rangehandler}/>
                     <button type='submit'>Search</button>
                 </form>
             </div>
