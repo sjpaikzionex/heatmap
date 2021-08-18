@@ -21,7 +21,7 @@ class HeatMap extends Component {
                 this.y_label = Array.from(new Set(d3.map(this.data, d => d.qty_pct)));
                 this.right_label = []
                 for (let i = 0; i < this.data.length; i++) {
-                    this.right_label.push(this.data[i].pct_cnt.toString())
+                    this.right_label.push(this.data[i].pct_cnt)
                 }
                 this.chart_dat = this.process_data(this.data);
                 this.margin = ({ top: 20, left: 20, right: 40, bottom: 80 });

@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import HeatMap from './heatmap';
-import { Range, getTrackBackground } from 'react-range';
 import axios from 'axios';
 import SliderWrapper from './sliderWrapper';
 const d3 = require('d3');
@@ -12,7 +11,7 @@ class App extends Component {
         this.rangehandler = this.rangehandler.bind(this)
     }
 
-    target_count = 1500;
+    target_count = 1000;
     maxCov = [1.5]
 
     rangehandler(v) {
@@ -77,7 +76,8 @@ class App extends Component {
                 .attr('width', boxwidth)
                 .attr('height', boxheight)
                 .attr('fill', d3.rgb(0, 0, 10, 0.2))
-                .style('stroke-width', '0.5');
+                .style('stroke-width', '0.5')
+                .on('click', (d) => {d3.selectAll('#selected').remove()});
         }
 
         axios
@@ -96,6 +96,7 @@ class App extends Component {
                 <h3>Heat Map</h3>
                 <HeatMap size={[820, 500]}/>
                 <h3>Select Criteria</h3>
+                <h5>Target Count: {this.target_count}</h5>
                 <form onSubmit={this.handleSubmit}>
                     <SliderWrapper handler={this.rangehandler}/>
                     <button type='submit'>Search</button>
