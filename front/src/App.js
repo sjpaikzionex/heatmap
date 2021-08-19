@@ -114,8 +114,8 @@ class App extends Component {
                     <SliderWrapper handler={this.rangehandler}/>
                     <button type='submit'>Search</button>
                 </form>
-                <h3>Selected Stat</h3>
-                <SelectedStat size={[450, 800]} trigger={this.state.clicked} />
+                <h3>Selected Stat Summary</h3>
+                <SelectedStat size={[450, 500]} trigger={this.state.clicked} />
             </div>
         );
     }

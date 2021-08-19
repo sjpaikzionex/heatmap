@@ -98,13 +98,6 @@ class HeatMap extends Component {
                 .selectAll("text")
                     .style("fill", "#777");
 
-        svg
-            .selectAll('g')
-            .data(this.chart_dat)
-            .enter()
-                .append('g')
-                .attr("transform", d => `translate(0,${this.y_scale(d.qty_pct) + 1})`);
-
         const tip = d3Tip()
             .attr('class', 'd3-tip')
             .offset([3, 0])
