@@ -20,7 +20,8 @@ class SelectedStat extends Component {
                     .then(response => {
                         this.data = response.data
                         d3.select(this.node).selectAll('*').remove();
-                        this.createSelectedStat_pie();
+                        this.createSelectedStat_hist();
+                        // this.createSelectedStat_pie();
                     })
                     .catch(error => {
                         console.log(error)
@@ -183,7 +184,6 @@ class SelectedStat extends Component {
             .append('text')
                 .style('position', 'absolute')
                 .style('visibility', 'visible')
-                .text('text');
 
         graph
             .selectAll()
@@ -195,9 +195,13 @@ class SelectedStat extends Component {
                 .attr('fill', d => {return color(d.value)})
                 .attr('fill-opacity', 0.5)
                 .style('stroke', 'black')
-                .on("mouseover", () => {return tip.style("visibility", "visible");})
-                .on("mousemove", (e) => {console.log(e); return tip.style("top", (e.pageY)+"px").style("left",(e.pageX)+"px");})
-                .on("mouseout", function(){return tip.style("visibility", "hidden");});
+                .on("mouseover", (e, d) => {
+                    return tip
+                        .style("visibility", "visible")
+                        .text(d.data.x0 + '-' + d.data.x1 + ': ' + d.value);
+                })
+                .on("mousemove", (e) => {console.log(e); return tip.attr("y", (e.y - 550)+"px").attr("x",(e.x - 230)+"px");})
+                // .on("mouseout", function(){return tip.style("visibility", "hidden");});
 
         // for (let i = 0; i < piedat.length; i++) {
         //     const text = graph
