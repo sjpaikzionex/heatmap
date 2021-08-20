@@ -52,6 +52,13 @@ class HeatMap extends Component {
             });
     }
 
+    componentDidUpdate(prevProp) {
+        if (this.props.dates[0] !== prevProp.dates[0] || this.props.dates[1] !== prevProp.dates[1]) {
+            d3.select(this.node).selectAll('*').remove();
+            this.componentDidMount();
+        }
+    }
+
     process_data = (grp_dat) => {
         let ra = Array(grp_dat.length * this.x_label.length);
 

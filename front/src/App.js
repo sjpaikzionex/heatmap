@@ -107,7 +107,7 @@ class App extends Component {
         return (
             <div>
                 <h3>Heat Map</h3>
-                <HeatMap size={[820, 500]} select_handler={this.selecthandler}/>
+                <HeatMap size={[820, 500]} dates={['2018-01-01', '2021-03-31']} select_handler={this.selecthandler}/>
                 <h3>Select Criteria</h3>
                 <h5>Target Count: {this.state.target_count}</h5>
                 <form onSubmit={this.handleSubmit}>
